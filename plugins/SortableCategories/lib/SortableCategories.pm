@@ -1,6 +1,7 @@
 # $Id$
 package SortableCategories;
 use strict;
+use POSIX qw( INT_MAX );
 
 # patch to list_category
 sub list_category_source {
@@ -28,15 +29,13 @@ sub resort_category_loop {
     \@data;
 }
 
-sub MAX_INT() { 2147483647 }
-
 sub __pusher {
     my ( $children, $id ) = @_;
     my $list = $children->{$id};
     return () unless $list && @$list;
     my @sorted_list = sort {
-        ( $a->{category_rank} || MAX_INT() )
-          <=> ( $b->{category_rank} || MAX_INT() )
+        ( $a->{category_rank} || INT_MAX )
+          <=> ( $b->{category_rank} || INT_MAX )
     } @$list;
     my @flat;
     for (@sorted_list) {

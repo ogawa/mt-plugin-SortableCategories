@@ -34,9 +34,13 @@ sub instance { $plugin }
 
 sub init_registry {
     my $plugin = shift;
+    require POSIX;
     $plugin->registry(
         {
-            object_types => { category => { rank => 'integer indexed', }, },
+            object_types => {
+                category =>
+                  { rank => 'integer indexed default ' . POSIX::INT_MAX, },
+            },
             applications => {
                 cms => {
                     methods => {
