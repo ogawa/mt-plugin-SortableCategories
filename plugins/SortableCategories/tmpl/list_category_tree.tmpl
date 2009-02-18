@@ -1,0 +1,130 @@
+<mt:setvarblock name="page_title"><__trans phrase="Manage [_1] Tree" params="<mt:var name="object_label">"></mt:setvarblock>
+<mt:setvarblock name="html_head" append="1">
+<script type="text/javascript" src="http://www.google.com/jsapi"></script>
+<script type="text/javascript">
+google.load("prototype", "1.6");
+google.load("scriptaculous", "1.8");
+</script>
+<style type="text/css">
+#category-tree ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+}
+#category-tree li {
+    margin: 4px 0 4px 20px;
+    cursor: move;
+}
+li.category-placeholder {
+    margin: 0 0 0 20px;
+    padding: 0;
+    height: 2px;
+}
+div.dropmarker {
+    height: 6px;
+    width: 200px;
+    background: url(<mt:var name="static_uri">images/drop.gif) left top;
+    margin-top: -3px;
+    margin-left: -5px;
+    z-index: 1000;
+    overflow: hidden;
+}
+</style>
+<script type="text/javascript">
+function appendToCategoryTree(id, parent_id, url, label) {
+    var parent;
+    if (parent_id) {
+        parent = document.getElementById('category_' + parent_id);
+        parent = parent.lastChild;
+    } else {
+        parent = document.getElementById('category-tree');
+    }
+    var li = document.createElement('li');
+    li.id = 'category_' + id;
+    li.innerHTML = label +
+        ' <a href="' + url + '"><img src="<mt:var name="static_uri">images/arrow-down-blue.gif" /></a>' +
+	'<ul></ul>';
+    parent.appendChild(li);
+}
+var categoryTreeText; // backup
+function initCategoryTree() {
+    var root = document.getElementById('category-tree');
+    var uls = root.getElementsByTagName('ul');
+    for (var i = 0; i < uls.length; i++) {
+        var li = document.createElement('li');
+        li.className = 'category-placeholder';
+        uls[i].appendChild(li);
+    }
+    categoryTreeText = root.innerHTML;
+    Sortable.create('category-tree', { tree: true, ghosting: true, constraint: false });
+}
+function saveCategoryTree() {
+    var f = document.getElementById('<mt:var name="object_type">-listing-form');
+    f['__mode'].value = 'save_cat_tree';
+    f['serialized_tree'].value = Sortable.serialize('category-tree');
+    f.submit();
+}
+function resetCategoryTree() {
+    var root = document.getElementById('category-tree');
+    root.innerHTML = categoryTreeText;
+    Sortable.create('category-tree', { tree: true, ghosting: true, constraint: false });
+}
+</script>
+</mt:setvarblock>
+<mt:setvarblock name="system_msg">
+    <div id="msg-block">
+        <mt:if name="saved">
+            <mtapp:statusmsg
+                id="saved"
+                class="success"
+                rebuild="all">
+                <__trans phrase="Your category tree changes have been made.">
+            </mtapp:statusmsg>
+        </mt:if>
+    </div>
+</mt:setvarblock>
+<mt:setvarblock name="action_buttons">
+    <a href="javascript:void(0)"
+        onclick="saveCategoryTree(); return false;"
+        accesskey="s"
+        title="<__trans phrase="Save cateogry tree (s)">"
+        ><__trans phrase="Save"></a>
+    <a href="javascript:void(0)"
+        onclick="resetCategoryTree(); return false;"
+        accesskey="r"
+        title="<__trans phrase="Reset cateogry tree (r)">"
+        ><__trans phrase="Reset"></a>
+</mt:setvarblock>
+<mt:var name="position_actions_top" value="1">
+<mt:setvarblock name="content_header">
+</mt:setvarblock>
+<mt:include name="include/header.tmpl">
+
+<mtapp:listing hide_pager="1">
+    <mt:if __first__>
+        <input type="hidden" name="serialized_tree" value="" />
+        <thead>
+            <tr>
+                <th id="cat-categories" class="category"><mt:var name="object_label_plural"></th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>
+                    <ul id="category-tree">
+                    </ul>
+    </mt:if>
+                        <script type="text/javascript">appendToCategoryTree(<mt:var name="category_id">, <mt:var name="category_parent">, '<mt:var name="script_url">?__mode=view&amp;_type=<mt:var name="object_type" escape="url">&amp;blog_id=<mt:var name="blog_id" escape="url">&amp;id=<mt:var name="category_id" escape="url">', '<mt:var name="category_label_full">');</script>
+    <mt:if __last__>
+                        <script type="text/javascript">initCategoryTree();</script>
+                </td>
+            </tr>
+        </tbody>
+    </mt:if>
+<mt:else>
+    <mtapp:statusmsg id="zero-state" class="info zero-state">
+        <__trans phrase="No categories could be found.">
+    </mtapp:statusmsg>
+</mtapp:listing>
+
+<mt:include name="include/footer.tmpl">
