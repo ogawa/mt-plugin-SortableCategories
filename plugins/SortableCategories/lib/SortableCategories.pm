@@ -2,7 +2,67 @@
 package SortableCategories;
 use strict;
 
-# patch to list_category
+# Util: re-sort category_loop by category_rank
+sub resort_category_loop {
+    my ($data) = @_;
+    my $children = {};
+    require POSIX;
+    for (@$data) {
+        $_->{category_rank} ||= POSIX::INT_MAX;
+        my $list = $children->{ $_->{category_parent} } ||= [];
+        push @$list, $_;
+    }
+    sub __category_loop_pusher {
+        my ( $children, $id ) = @_;
+        $id ||= 0;
+        my $list = $children->{$id};
+        return () unless $list && @$list;
+        my @sorted_list =
+          sort { $a->{category_rank} <=> $b->{category_rank} } @$list;
+        my @flat;
+        for (@sorted_list) {
+            push @flat, $_;
+            push @flat, __category_loop_pusher( $children, $_->{category_id} )
+              if $children->{ $_->{category_id} };
+        }
+        @flat;
+    }
+    my @data = __category_loop_pusher( $children, 0 );
+    \@data;
+}
+
+# Util: re-sort category_tree by category_rank
+sub resort_category_tree {
+    my ( $type, $data ) = @_;
+    my $class    = MT->model($type);
+    my $children = {};
+    require POSIX;
+    for (@$data) {
+        my $cat = $class->load( $_->{id} ) or next;
+        $_->{rank} = $cat->rank || POSIX::INT_MAX;
+        my $list = $children->{ $cat->parent } ||= [];
+        push @$list, $_;
+    }
+    sub __category_tree_pusher {
+        my ( $children, $id ) = @_;
+        $id ||= 0;
+        my $list = $children->{$id};
+        return () unless $list && @$list;
+        my @sorted_list =
+          sort { $a->{rank} <=> $b->{rank} } @$list;
+        my @flat;
+        for (@sorted_list) {
+            push @flat, $_;
+            push @flat, __category_tree_pusher( $children, $_->{id} )
+              if $children->{ $_->{id} };
+        }
+        @flat;
+    }
+    my @data = __category_tree_pusher( $children, 0 );
+    \@data;
+}
+
+# Transformer: patch to list_category.tmpl and list_folder.tmpl
 sub list_category_source {
     my ( $cb, $app, $tmpl ) = @_;
     my $q = $app->param;
@@ -16,44 +76,23 @@ q(<mt:setvarblock name="content_header" append="1"><p class="create-new-link"><a
     }
 }
 
-# re-sort category_loop by category_rank
-sub resort_category_loop {
-    my ($data) = @_;
-    my $children = {};
-    for my $cat (@$data) {
-        my $list = $children->{ $cat->{category_parent} } ||= [];
-        push @$list, $cat;
-    }
-    sub __pusher {
-        my ( $children, $id ) = @_;
-        $id ||= 0;
-        my $list = $children->{$id};
-        return () unless $list && @$list;
-        require POSIX;
-        my @sorted_list = sort {
-            ( $a->{category_rank} || POSIX::INT_MAX )
-              <=> ( $b->{category_rank} || POSIX::INT_MAX )
-        } @$list;
-        my @flat;
-        for (@sorted_list) {
-            push @flat, $_;
-            push @flat, __pusher( $children, $_->{category_id} )
-              if $children->{ $_->{category_id} };
-        }
-        @flat;
-    }
-    my @data = __pusher( $children, 0 );
-    \@data;
-}
-
-# patch to parameters of list_category
+# Transformer: patch to parameters of list_category.tmpl and list_folder.tmpl
 sub list_category_param {
     my ( $cb, $app, $param, $tmpl ) = @_;
     $param->{object_loop} = $param->{category_loop} =
       resort_category_loop( $param->{category_loop} );
 }
 
-# derived from MT::CMS::Category::list
+# Transformer: patch to parameters of edit_entry.tmpl
+sub edit_entry_param {
+    my ( $cb, $app, $param, $tmpl ) = @_;
+    my $q = $app->param;
+    my $type = $q->param('_type') eq 'entry' ? 'category' : 'folder';
+    $param->{category_tree} =
+      resort_category_tree( $type, $param->{category_tree} );
+}
+
+# CMS Method: derived from MT::CMS::Category::list
 sub list_cat_tree {
     my $app   = shift;
     my $q     = $app->param;
@@ -124,6 +163,7 @@ sub list_cat_tree {
     $app->build_page( $tmpl, \%param );
 }
 
+# CMS Method
 sub save_cat_tree {
     my $app   = shift;
     my $q     = $app->param;

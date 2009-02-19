@@ -33,7 +33,10 @@ MT->add_plugin($plugin);
 sub instance { $plugin }
 
 sub init_registry {
-    my $plugin = shift;
+    my $plugin    = shift;
+    my $pkg       = 'SortableCategories::';
+    my $source_cb = 'MT::App::CMS::template_source.';
+    my $param_cb  = 'MT::App::CMS::template_param.';
     require POSIX;
     $plugin->registry(
         {
@@ -44,20 +47,17 @@ sub init_registry {
             applications => {
                 cms => {
                     methods => {
-                        list_cat_tree => 'SortableCategories::list_cat_tree',
-                        save_cat_tree => 'SortableCategories::save_cat_tree',
+                        list_cat_tree => "${pkg}list_cat_tree",
+                        save_cat_tree => "${pkg}save_cat_tree",
                     },
                 },
             },
             callbacks => {
-                'MT::App::CMS::template_source.list_category' =>
-                  'SortableCategories::list_category_source',
-                'MT::App::CMS::template_source.list_folder' =>
-                  'SortableCategories::list_category_source',
-                'MT::App::CMS::template_param.list_category' =>
-                  'SortableCategories::list_category_param',
-                'MT::App::CMS::template_param.list_folder' =>
-                  'SortableCategories::list_category_param',
+                "${source_cb}list_category" => "${pkg}list_category_source",
+                "${source_cb}list_folder"   => "${pkg}list_category_source",
+                "${param_cb}list_category"  => "${pkg}list_category_param",
+                "${param_cb}list_folder"    => "${pkg}list_category_param",
+                "${param_cb}edit_entry"     => "${pkg}edit_entry_param",
             },
         }
     );
