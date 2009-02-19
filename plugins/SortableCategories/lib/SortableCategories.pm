@@ -1,7 +1,6 @@
 # $Id$
 package SortableCategories;
 use strict;
-use POSIX qw( INT_MAX );
 
 # patch to list_category
 sub list_category_source {
@@ -25,27 +24,29 @@ sub resort_category_loop {
         my $list = $children->{ $cat->{category_parent} } ||= [];
         push @$list, $cat;
     }
+    sub __pusher {
+        my ( $children, $id ) = @_;
+        $id ||= 0;
+        my $list = $children->{$id};
+        return () unless $list && @$list;
+        require POSIX;
+        my @sorted_list = sort {
+            ( $a->{category_rank} || POSIX::INT_MAX )
+              <=> ( $b->{category_rank} || POSIX::INT_MAX )
+        } @$list;
+        my @flat;
+        for (@sorted_list) {
+            push @flat, $_;
+            push @flat, __pusher( $children, $_->{category_id} )
+              if $children->{ $_->{category_id} };
+        }
+        @flat;
+    }
     my @data = __pusher( $children, 0 );
     \@data;
 }
 
-sub __pusher {
-    my ( $children, $id ) = @_;
-    my $list = $children->{$id};
-    return () unless $list && @$list;
-    my @sorted_list = sort {
-        ( $a->{category_rank} || INT_MAX )
-          <=> ( $b->{category_rank} || INT_MAX )
-    } @$list;
-    my @flat;
-    for (@sorted_list) {
-        push @flat, $_;
-        push @flat, __pusher( $children, $_->{category_id} )
-          if $children->{ $_->{category_id} };
-    }
-    @flat;
-}
-
+# patch to parameters of list_category
 sub list_category_param {
     my ( $cb, $app, $param, $tmpl ) = @_;
     $param->{object_loop} = $param->{category_loop} =
@@ -142,7 +143,7 @@ sub save_cat_tree {
 
     $app->validate_magic() or return;
 
-    my $blog_id = $q->param('blog_id');
+    my $blog_id         = $q->param('blog_id');
     my $serialized_tree = $q->param('serialized_tree');
 
     my %cat_ids;
@@ -175,6 +176,14 @@ sub save_cat_tree {
             }
         )
     );
+}
+
+# sort method for mt:TopLevelCategories
+sub sorter ($$) {
+    my ( $a, $b ) = @_;
+    return $a->label cmp $b->label if $a->rank == $b->rank;
+    require POSIX;
+    return ( $a->rank || POSIX::INT_MAX ) <=> ( $b->rank || POSIX::INT_MAX );
 }
 
 1;
