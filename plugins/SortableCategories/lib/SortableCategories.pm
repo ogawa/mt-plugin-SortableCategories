@@ -77,10 +77,14 @@ sub list_category_source {
           ? $plugin->translate('Manage Category Tree')
           : $plugin->translate('Manage Folder Tree');
         my $new = << "EOT";
-<mt:setvarblock name="content_header" append="1">
-    <p class="create-new-link">
-        <a class="icon-left icon-create" href="<mt:var name="script_url">?__mode=list_cat_tree&amp;_type=<mt:var name="object_type" escape="url">&amp;blog_id=<mt:var name="blog_id" escape="url">">$text</a>
-    </p>
+<mt:setvarblock name="related_content" append="1">
+    <mtapp:widget
+        id="useful-links"
+        label="<__trans phrase="Useful links">">
+        <ul>
+            <li><a href="<mt:var name="script_url">?__mode=list_cat_tree&amp;_type=<mt:var name="object_type" escape="url">&amp;blog_id=<mt:var name="blog_id" escape="url">">$text</a></li>
+        </ul>
+    </mtapp:widget>
 </mt:setvarblock>
 EOT
         $$tmpl =~ s/($old)/$new$1/;

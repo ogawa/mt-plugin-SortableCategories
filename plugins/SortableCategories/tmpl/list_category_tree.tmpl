@@ -96,6 +96,13 @@ function resetCategoryTree() {
         ><__trans phrase="Reset"></a>
 </mt:setvarblock>
 <mt:setvarblock name="related_content">
+    <mtapp:widget
+        id="useful-links"
+        label="<__trans phrase="Useful links">">
+        <ul>
+            <li><a href="<mt:var name="script_url">?__mode=list_cat&amp;_type=<mt:var name="object_type" escape="url">&amp;blog_id=<mt:var name="blog_id" escape="url">"><__trans phrase="Manage Categories"></a></li>
+        </ul>
+    </mtapp:widget>
     <$MTApp:PageActions from="list_cat_tree"$>
 </mt:setvarblock>
 <mt:var name="position_actions_top" value="1">
