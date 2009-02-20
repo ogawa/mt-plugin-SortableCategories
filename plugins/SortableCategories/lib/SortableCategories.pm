@@ -12,7 +12,8 @@ sub resort_category_loop {
         my $list = $children->{ $_->{category_parent} } ||= [];
         push @$list, $_;
     }
-    sub __category_loop_pusher {
+    my $pusher;
+    $pusher = sub {
         my ( $children, $id ) = @_;
         $id ||= 0;
         my $list = $children->{$id};
@@ -22,12 +23,12 @@ sub resort_category_loop {
         my @flat;
         for (@sorted_list) {
             push @flat, $_;
-            push @flat, __category_loop_pusher( $children, $_->{category_id} )
+            push @flat, $pusher->( $children, $_->{category_id} )
               if $children->{ $_->{category_id} };
         }
         @flat;
-    }
-    my @data = __category_loop_pusher( $children, 0 );
+    };
+    my @data = $pusher->( $children, 0 );
     \@data;
 }
 
@@ -43,7 +44,8 @@ sub resort_category_tree {
         my $list = $children->{ $cat->parent } ||= [];
         push @$list, $_;
     }
-    sub __category_tree_pusher {
+    my $pusher;
+    $pusher = sub {
         my ( $children, $id ) = @_;
         $id ||= 0;
         my $list = $children->{$id};
@@ -53,12 +55,12 @@ sub resort_category_tree {
         my @flat;
         for (@sorted_list) {
             push @flat, $_;
-            push @flat, __category_tree_pusher( $children, $_->{id} )
+            push @flat, $pusher->( $children, $_->{id} )
               if $children->{ $_->{id} };
         }
         @flat;
-    }
-    my @data = __category_tree_pusher( $children, 0 );
+    };
+    my @data = $pusher->( $children, 0 );
     \@data;
 }
 
@@ -70,8 +72,17 @@ sub list_category_source {
     if ( $q->param('blog_id') ) {
         my $old    = q(<mt:include name="include/header.tmpl">);
         my $plugin = MT::Plugin::SortableCategories->instance;
-	my $new =
-q(<mt:setvarblock name="content_header" append="1"><p class="create-new-link"><a class="icon-left icon-create" href="<mt:var name="script_url">?__mode=list_cat_tree&amp;_type=<mt:var name="object_type" escape="url">&amp;blog_id=<mt:var name="blog_id" escape="url">">) . $plugin->translate('Manage [_1] Tree', $app->model($type)->class_label) . q(</a></p></mt:setvarblock>);
+        my $text =
+            $type eq 'category'
+          ? $plugin->translate('Manage Category Tree')
+          : $plugin->translate('Manage Folder Tree');
+        my $new = << "EOT";
+<mt:setvarblock name="content_header" append="1">
+    <p class="create-new-link">
+        <a class="icon-left icon-create" href="<mt:var name="script_url">?__mode=list_cat_tree&amp;_type=<mt:var name="object_type" escape="url">&amp;blog_id=<mt:var name="blog_id" escape="url">">$text</a>
+    </p>
+</mt:setvarblock>
+EOT
         $$tmpl =~ s/($old)/$new$1/;
     }
 }
@@ -83,13 +94,20 @@ sub list_category_param {
       resort_category_loop( $param->{category_loop} );
 }
 
-# Transformer: patch to parameters of edit_entry.tmpl
+# Transformer: patch to parameters of edit_entry.tmpl and dialog/asset_upload.tmpl
 sub edit_entry_param {
     my ( $cb, $app, $param, $tmpl ) = @_;
     my $q = $app->param;
     my $type = $q->param('_type') eq 'entry' ? 'category' : 'folder';
     $param->{category_tree} =
       resort_category_tree( $type, $param->{category_tree} );
+}
+
+# Transformer: for debug
+sub debug_param {
+    my ( $cb, $app, $param, $tmpl ) = @_;
+    use Data::Dumper;
+    print STDERR $cb->name . ': ' . Dumper($param);
 }
 
 # CMS Method: derived from MT::CMS::Category::list
@@ -210,9 +228,9 @@ sub save_cat_tree {
         $app->uri(
             'mode' => 'list_cat_tree',
             args   => {
-                _type      => $type,
-                blog_id    => $blog_id,
-                saved      => 1,
+                _type   => $type,
+                blog_id => $blog_id,
+                saved   => 1,
             }
         )
     );

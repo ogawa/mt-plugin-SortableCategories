@@ -58,6 +58,7 @@ sub init_registry {
                 "${param_cb}list_category"  => "${pkg}list_category_param",
                 "${param_cb}list_folder"    => "${pkg}list_category_param",
                 "${param_cb}edit_entry"     => "${pkg}edit_entry_param",
+                "${param_cb}asset_upload"   => "${pkg}edit_entry_param",
             },
         }
     );
