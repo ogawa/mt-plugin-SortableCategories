@@ -144,7 +144,6 @@ sub list_cat_tree {
         new_cat_id => scalar $q->param('new_cat_id'),
         type       => $type
     );
-    $data = resort_category_loop($data);
     my %param;
     if ( $blog->site_url =~ /\/$/ ) {
         $param{blog_site_url} = $blog->site_url;
@@ -152,7 +151,7 @@ sub list_cat_tree {
     else {
         $param{blog_site_url} = $blog->site_url . '/';
     }
-    $param{object_loop} = $param{category_loop} = $data;
+    $param{object_loop} = $param{category_loop} = resort_category_loop($data);
     $param{saved} = $q->param('saved');
     $param{saved_deleted} = $q->param('saved_deleted');
     $app->load_list_actions( $type, \%param );
