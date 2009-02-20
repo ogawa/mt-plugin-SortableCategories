@@ -34,7 +34,7 @@ sub instance { $plugin }
 
 sub init_registry {
     my $plugin    = shift;
-    my $pkg       = 'SortableCategories::';
+    my $pkg       = 'SortableCategories::CMS::';
     my $source_cb = 'MT::App::CMS::template_source.';
     my $param_cb  = 'MT::App::CMS::template_param.';
     require POSIX;
