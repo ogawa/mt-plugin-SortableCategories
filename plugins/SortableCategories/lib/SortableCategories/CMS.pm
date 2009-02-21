@@ -89,23 +89,15 @@ sub list_category_param {
     require MT::Template;
     bless $header, 'MT::Template::Node';
 
-    my $related_content =
-      $tmpl->createElement( 'setvarblock',
-        { name => 'related_content', append => 1 } );
-    my $label =
-        $type eq 'category'
-      ? $plugin->translate('Manage Category Tree')
-      : $plugin->translate('Manage Folder Tree');
-    my $innerHTML = qq{
-    <mtapp:widget
-        id="useful-links"
-        label="<__trans phrase="Useful links">">
-        <ul>
-            <li><a href="<mt:var name="script_url">?__mode=list_cat_tree&amp;_type=<mt:var name="object_type" escape="url">&amp;blog_id=<mt:var name="blog_id" escape="url">">$label</a></li>
-        </ul>
-    </mtapp:widget>
-};
-    $related_content->innerHTML($innerHTML);
+    require File::Spec;
+    my $related_content = $tmpl->createElement(
+        'include',
+        {
+            name => File::Spec->catdir(
+                $plugin->path, 'tmpl', "link_${type}_tree.tmpl"
+            )
+        }
+    );
     $tmpl->insertBefore( $related_content, $header );
 }
 
