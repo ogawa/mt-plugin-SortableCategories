@@ -64,22 +64,39 @@ sub resort_category_tree {
     \@data;
 }
 
-# Source Transformer
-# patch to list_category.tmpl and list_folder.tmpl
-sub list_category_source {
-    my ( $cb, $app, $tmpl ) = @_;
-    my $q = $app->param;
-    return unless $q->param('blog_id');
-
-    my $type = $q->param('_type') || 'category';
+# Transformer for list_category.tmpl and list_folder.tmpl, which
+# re-sorts "object_loop" and "category_loop" based on category_rank
+# and adds "related_content" setvarblock
+sub list_category_param {
+    my ( $cb, $app, $param, $tmpl ) = @_;
+    my $q      = $app->param;
+    my $type   = $q->param('_type') || 'category';
     my $plugin = $cb->plugin;
+
+    $param->{object_loop} = $param->{category_loop} =
+      resort_category_loop( $param->{category_loop} );
+
+    my $header;
+    my $includes = $tmpl->getElementsByTagName('include');
+    for (@$includes) {
+        if ( $_->getAttribute('name') =~ /header.tmpl$/ ) {
+            $header = $_;
+            last;
+        }
+    }
+    return unless $header;
+
+    require MT::Template;
+    bless $header, 'MT::Template::Node';
+
+    my $related_content =
+      $tmpl->createElement( 'setvarblock',
+        { name => 'related_content', append => 1 } );
     my $label =
         $type eq 'category'
       ? $plugin->translate('Manage Category Tree')
       : $plugin->translate('Manage Folder Tree');
-    my $old = q(<mt:include name="include/header.tmpl">);
-    my $new = << "EOT";
-<mt:setvarblock name="related_content" append="1">
+    my $innerHTML = qq{
     <mtapp:widget
         id="useful-links"
         label="<__trans phrase="Useful links">">
@@ -87,21 +104,13 @@ sub list_category_source {
             <li><a href="<mt:var name="script_url">?__mode=list_cat_tree&amp;_type=<mt:var name="object_type" escape="url">&amp;blog_id=<mt:var name="blog_id" escape="url">">$label</a></li>
         </ul>
     </mtapp:widget>
-</mt:setvarblock>
-EOT
-    $$tmpl =~ s/($old)/$new$1/;
+};
+    $related_content->innerHTML($innerHTML);
+    $tmpl->insertBefore( $related_content, $header );
 }
 
-# Transformer
-# patch to parameters of list_category.tmpl and list_folder.tmpl
-sub list_category_param {
-    my ( $cb, $app, $param, $tmpl ) = @_;
-    $param->{object_loop} = $param->{category_loop} =
-      resort_category_loop( $param->{category_loop} );
-}
-
-# Param Transformer
-# patch to parameters of edit_entry.tmpl and dialog/asset_upload.tmpl
+# Transformer for edit_entry.tmpl and dialog/asset_upload.tmpl, which
+# re-sorts "category_tree" based on category_rank
 sub edit_entry_param {
     my ( $cb, $app, $param, $tmpl ) = @_;
     my $q = $app->param;
@@ -110,8 +119,7 @@ sub edit_entry_param {
       resort_category_tree( $type, $param->{category_tree} );
 }
 
-# Param Transformer
-# for debug
+# Transformer for debugging
 sub debug_param {
     my ( $cb, $app, $param, $tmpl ) = @_;
     use Data::Dumper;
