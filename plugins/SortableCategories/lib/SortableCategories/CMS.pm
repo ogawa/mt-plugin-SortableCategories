@@ -143,19 +143,22 @@ sub list_cat_tree {
     require MT::Blog;
     my $blog = MT::Blog->load($blog_id)
       or return $app->errtrans("Invalid request.");
+    my %param;
+    my %authors;
     my $data = $app->_build_category_list(
         blog_id    => $blog_id,
-        new_cat_id => scalar $q->param('new_cat_id'),
+        # counts     => 1,
+        # new_cat_id => scalar $q->param('new_cat_id'),
         type       => $type
     );
-    my %param;
     if ( $blog->site_url =~ /\/$/ ) {
         $param{blog_site_url} = $blog->site_url;
     }
     else {
         $param{blog_site_url} = $blog->site_url . '/';
     }
-    $param{object_loop} = $param{category_loop} = resort_category_loop($data);
+    $data = resort_category_loop($data);
+    $param{object_loop} = $param{category_loop} = $data;
     $param{saved} = $q->param('saved');
     $param{saved_deleted} = $q->param('saved_deleted');
     $app->load_list_actions( $type, \%param );
