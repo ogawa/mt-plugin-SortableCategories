@@ -91,13 +91,11 @@ sub list_category_param {
     require MT::Template;
     bless $header, 'MT::Template::Node';
 
-    require File::Spec;
     my $related_content = $tmpl->createElement(
         'include',
         {
-            name => File::Spec->catdir(
-                $plugin->path, 'tmpl', "link_${type}_tree.tmpl"
-            )
+            name      => 'link_' . $type . '_tree.tmpl',
+            component => $plugin->id,
         }
     );
     $tmpl->insertBefore( $related_content, $header );
@@ -185,9 +183,8 @@ sub list_cat_tree {
     $param{screen_class} .= " list-category"
       if $type eq 'folder';    # to piggyback on list-category styles
     my $tmpl_file = 'list_' . $type . '_tree.tmpl';
-    my $plugin    = MT::Plugin::SortableCategories->instance;
-    my $tmpl      = $plugin->load_tmpl($tmpl_file);
-    $app->build_page( $tmpl, \%param );
+    my $plugin    = $app->component('sortable_categories');
+    $plugin->load_tmpl( $tmpl_file, \%param );
 }
 
 # CMS Method
@@ -237,8 +234,8 @@ sub save_cat_tree {
 
     $app->redirect(
         $app->uri(
-            'mode' => 'list_cat_tree',
-            args   => {
+            mode => 'list_cat_tree',
+            args => {
                 _type   => $type,
                 blog_id => $blog_id,
                 saved   => 1,
