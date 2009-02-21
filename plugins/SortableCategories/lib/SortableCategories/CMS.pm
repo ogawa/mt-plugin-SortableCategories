@@ -64,7 +64,8 @@ sub resort_category_tree {
     \@data;
 }
 
-# Transformer: patch to list_category.tmpl and list_folder.tmpl
+# Source Transformer
+# patch to list_category.tmpl and list_folder.tmpl
 sub list_category_source {
     my ( $cb, $app, $tmpl ) = @_;
     my $q = $app->param;
@@ -91,14 +92,16 @@ EOT
     $$tmpl =~ s/($old)/$new$1/;
 }
 
-# Transformer: patch to parameters of list_category.tmpl and list_folder.tmpl
+# Transformer
+# patch to parameters of list_category.tmpl and list_folder.tmpl
 sub list_category_param {
     my ( $cb, $app, $param, $tmpl ) = @_;
     $param->{object_loop} = $param->{category_loop} =
       resort_category_loop( $param->{category_loop} );
 }
 
-# Transformer: patch to parameters of edit_entry.tmpl and dialog/asset_upload.tmpl
+# Param Transformer
+# patch to parameters of edit_entry.tmpl and dialog/asset_upload.tmpl
 sub edit_entry_param {
     my ( $cb, $app, $param, $tmpl ) = @_;
     my $q = $app->param;
@@ -107,14 +110,15 @@ sub edit_entry_param {
       resort_category_tree( $type, $param->{category_tree} );
 }
 
-# Transformer: for debug
+# Param Transformer
+# for debug
 sub debug_param {
     my ( $cb, $app, $param, $tmpl ) = @_;
     use Data::Dumper;
     print STDERR $cb->name . ': ' . Dumper($param);
 }
 
-# CMS Method: derived from MT::CMS::Category::list
+# CMS Method (derived from MT::CMS::Category::list)
 sub list_cat_tree {
     my $app   = shift;
     my $q     = $app->param;
