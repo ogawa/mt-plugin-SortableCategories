@@ -1,74 +1,89 @@
-SortableCategories - Plugin for realizing Sortable Categories and Folders
+NAME
+    SortableCategories - Plugin for realzing Sortable Categories and Folders
 
-= Overview =
+DESCRIPTION
+    SortableCategories plugin allows you to arrange the orders of category
+    and folder lists as you need.
 
-SortableCategories plugin allows you to arrange the orders of category
-and folder lists as you need.
+    This plugin is designed to work with Movable Type 4.2 or later and does
+    not support dynamic publishing at this moment.
 
-This plugin is designed to work with Movable Type 4.2 or later and
-does not support dynamic publishing.
+INSTALLATION
+    *   Download and extract SortableCategories-<version>.zip file.
 
-= Installation =
+    *   Upload or copy the contents of "plugins" directory into your
+        "plugins" directory.
 
- * Download and extract SortableCategories-<version>.zip file.
+    *   Upload or copy the contents of "mt-static/plugins" directory into
+        your "mt-static/plugins" directory.
 
- * Upload or copy the contents of "plugins" directory into your
-   "plugins" directory.
+    *   After proper installation, you will find "SortableCategories" plugin
+        listed on the "System Plugin Settings" screen.
 
- * After proper installation, you will find "SortableCategories"
-   plugin listed on the "System Plugin Settings" screen.
+HOW TO USE
+    If you want to arrange the order of categories:
 
-= How to use =
+    *   First, go to "Manage Categories" screen (select "Categories" from
+        "Manage" dropdown list)
 
-If you want to arrange the order of categories:
+    *   Select "Manage Category Tree" located at the right side of "Manage
+        Categories" screen.
 
- * First, go to "Manage Categories" screen (select "Categories" from
-   "Manage" dropdown list)
+    *   In "Manage Category Tree" screen, you can arrange the category tree
+        as you like. Grab a category or a subtree of categories, and drop
+        them to any point of the category tree.
 
- * Select "Manage Category Tree" located at the right side of "Manage
-   Categories" screen.
+    *   After arranging the category tree, select "Save" button to save the
+        current tree.
 
- * In "Manage Category Tree" screen, you can arrange the category tree
-   as you like.  Grab a category or a subtree of categories, and drop
-   them to any point of the category tree.
+    You can also arrange the order of folders in the same way.
 
- * After arranging the category tree, select "Save" button to save the
-   current tree.
+TAGS
+    This plugin does not provide any tags, but one sort_method, named
+    "SortableCategories::sorter".
 
-You can also arrange the order of folders in the same way.
+    In order to render a "sorted" category tree, you should replace original
+    "Category Archives" widget with the following one:
 
-= Tags =
+        <mt:IfArchiveTypeEnabled archive_type="Category">
+        <div class="widget-archive widget-archive-category widget">
+            <h3 class="widget-header">Category</h3>
+            <div class="widget-content">
+            <mt:TopLevelCategories sort_method="SortableCategories::sorter">
+                <mt:SubCatIsFirst>
+                <ul>
+                </mt:SubCatIsFirst>
+                <mt:If tag="CategoryCount">
+                    <li><a href="<$mt:CategoryArchiveLink$>"<mt:If tag="CategoryDescription"> title="<$mt:CategoryDescription remove_html="1" encode_html="1"$>"</mt:If>><$mt:CategoryLabel$> (<$mt:CategoryCount$>)</a>
+                <mt:Else>
+                    <li><$mt:CategoryLabel$>
+                </mt:If>
+                <$mt:SubCatsRecurse$>
+                    </li>
+                <mt:SubCatIsLast>
+                </ul>
+                </mt:SubCatIsLast>
+            </mt:TopLevelCategories>
+            </div>
+        </div>
+        </mt:IfArchiveTypeEnabled>
 
-This plugin does not provide any tags, but one sort_method, named
-"SortableCategories::sorter".
+LICENSE
+    This library is free software; you can redistribute it and/or modify it
+    under the terms of either:
 
-In order to render a "sorted" category tree, you should replace
-original "Category Archives" widget with the following one.
+    *   the GNU General Public License as published by the Free Software
+        Foundation; either version 1, or (at your option) any later version,
+        or
 
-{{{
-<mt:IfArchiveTypeEnabled archive_type="Category">
-<div class="widget-archive widget-archive-category widget">
-    <h3 class="widget-header">Category</h3>
-    <div class="widget-content">
-    <mt:TopLevelCategories sort_method="SortableCategories::sorter">
-        <mt:SubCatIsFirst>
-        <ul>
-        </mt:SubCatIsFirst>
-        <mt:If tag="CategoryCount">
-            <li><a href="<$mt:CategoryArchiveLink$>"<mt:If tag="CategoryDescription"> title="<$mt:CategoryDescription remove_html="1" encode_html="1"$>"</mt:If>><$mt:CategoryLabel$> (<$mt:CategoryCount$>)</a>
-        <mt:Else>
-            <li><$mt:CategoryLabel$>
-        </mt:If>
-        <$mt:SubCatsRecurse$>
-            </li>
-        <mt:SubCatIsLast>
-        </ul>
-        </mt:SubCatIsLast>
-    </mt:TopLevelCategories>
-    </div>
-</div>
-</mt:IfArchiveTypeEnabled>
-}}}
+    *   the "Artistic License" which comes with Perl.
 
---
-$Id$
+SUPPORT
+    If you have questions or need assistance with this plugin, please use
+    the following link:
+
+    <http://code.as-is.net/public/wiki/SortableCategories>
+
+COPYRIGHT
+    Copyright (c) 2009 Hirotaka Ogawa <hirotaka.ogawa@gmail.com>.
+

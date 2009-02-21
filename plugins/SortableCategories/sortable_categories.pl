@@ -89,6 +89,9 @@ does not support dynamic publishing at this moment.
 =item * Upload or copy the contents of "plugins" directory into your
 "plugins" directory.
 
+=item * Upload or copy the contents of "mt-static/plugins" directory
+into your "mt-static/plugins" directory.
+
 =item * After proper installation, you will find "SortableCategories"
 plugin listed on the "System Plugin Settings" screen.
 
