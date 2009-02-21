@@ -7,8 +7,9 @@ sub resort_category_loop {
     my ($data) = @_;
     my $children = {};
     require POSIX;
+    my $int_max = POSIX::INT_MAX;
     for (@$data) {
-        $_->{category_rank} ||= POSIX::INT_MAX;
+        $_->{category_rank} ||= $int_max;
         my $list = $children->{ $_->{category_parent} } ||= [];
         push @$list, $_;
     }
@@ -38,9 +39,10 @@ sub resort_category_tree {
     my $class    = MT->model($type);
     my $children = {};
     require POSIX;
+    my $int_max = POSIX::INT_MAX;
     for (@$data) {
         my $cat = $class->load( $_->{id} ) or next;
-        $_->{rank} = $cat->rank || POSIX::INT_MAX;
+        $_->{rank} = $cat->rank || $int_max;
         my $list = $children->{ $cat->parent } ||= [];
         push @$list, $_;
     }
@@ -211,15 +213,18 @@ sub save_cat_tree {
     my $blog_id         = $q->param('blog_id');
     my $serialized_tree = $q->param('serialized_tree');
 
-    my %cat_ids;
-    my $rank = 1;
+    require POSIX;
+    my $int_max = POSIX::INT_MAX;
+    my %parents;
     for ( split /&/, $serialized_tree ) {
         my ( $key, $cat_id ) = split /=/, $_;
         $key =~ s/\[id\]//;    # depends on scriptaculous version
-        $cat_ids{$key} = $cat_id;
+        $parents{$key} = $cat_id;
         my $parent = 0;
-        if ( $key =~ m/(.+\[\d+\])\[\d+\]/ ) {
-            $parent = $cat_ids{$1};
+        my $rank   = $int_max;
+        if ( $key =~ m/(.+)\[(\d+)\]/ ) {
+            $parent = $parents{$1} if exists $parents{$1};
+            $rank = $2 + 1;
         }
         my $cat = $class->load($cat_id) or next;
         if ( $cat->parent != $parent || $cat->rank != $rank ) {
@@ -228,7 +233,6 @@ sub save_cat_tree {
             $cat->save
               or return $app->errtrans( $cat->errstr );
         }
-        $rank++;
     }
 
     $app->redirect(
