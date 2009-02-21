@@ -17,9 +17,10 @@ our $SCHEMA_VERSION = '0.01';
 
 my $plugin = __PACKAGE__->new(
     {
-        id          => 'sortable_categories',
-        name        => 'SortableCategories',
-        description => 'This plugin allows you to edit category tree easily.',
+        id   => 'sortable_categories',
+        name => 'SortableCategories',
+        description =>
+'<__trans phrase="SortableCategories plugin lets you easily edit category tree in the drag and drop manner.">',
         doc_link    => 'http://code.as-is.net/public/wiki/SortableCategories',
         author_name => 'Hirotaka Ogawa',
         author_link => 'http://as-is.net/blog/',
