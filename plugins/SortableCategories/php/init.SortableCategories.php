@@ -16,7 +16,9 @@ if (isset($switch) && isset($switch['SortableCategories/sortable_categories.pl']
 define('SORTABLE_CATEGORIES_ENABLED', 1);
 
 if (SORTABLE_CATEGORIES_ENABLED) {
-    # sort_method has not been supported yet.
+    function sortablecategories_sorter($a, $b) {
+        return $a['category_rank'] - $b['category_rank'];
+    }
 }
 
 ?>
