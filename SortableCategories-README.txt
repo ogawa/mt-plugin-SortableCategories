@@ -82,7 +82,7 @@ SUPPORT
     If you have questions or need assistance with this plugin, please use
     the following link:
 
-    <http://code.as-is.net/public/wiki/SortableCategories>
+    <https://github.com/ogawa/mt-plugin-SortableCategories>
 
 COPYRIGHT
     Copyright (c) 2009 Hirotaka Ogawa <hirotaka.ogawa@gmail.com>.

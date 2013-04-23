@@ -169,7 +169,7 @@ version, or
 If you have questions or need assistance with this plugin, please
 use the following link:
 
-L<http://code.as-is.net/public/wiki/SortableCategories>
+L<https://github.com/ogawa/mt-plugin-SortableCategories>
 
 =head1 COPYRIGHT
 
